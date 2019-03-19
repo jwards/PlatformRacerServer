@@ -3,6 +3,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
+import static java.lang.Thread.sleep;
+
 public class ClientConnection implements Runnable{
 
     private final Socket connection;
@@ -25,16 +27,30 @@ public class ClientConnection implements Runnable{
         try {
             //setup streams
             output = new ObjectOutputStream(connection.getOutputStream());
-            input = new ObjectInputStream(connection.getInputStream());
+            //input = new ObjectInputStream(connection.getInputStream());
             output.flush();
-            while(true){
-                //send
-                //recieve
+
+            while(true) {
+                output.writeObject(new GameUpdatePacket());
+                System.out.println("Sending Object...");
+                sleep(1000);
             }
+
 
 
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                output.close();
+                input.close();
+                connection.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
         }
     }
 }
