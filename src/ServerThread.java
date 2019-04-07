@@ -1,3 +1,5 @@
+import jsward.platformracer.common.util.TickerThread;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -5,18 +7,19 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 
-public class ServerThread extends Thread{
+import static jsward.platformracer.common.util.Constants.SERVER_PORT;
 
-
-    private static final int SERVER_PORT = 14914;
+public class ServerThread extends Thread {
 
     private ArrayList<ClientConnection> clients;
-    private ObjectInputStream input;
     private ServerSocket server;
+
+    private GameSessionManager gsm;
+
     private int id;
 
     public ServerThread() {
-
+        gsm = new GameSessionManager();
     }
 
 
@@ -36,7 +39,7 @@ public class ServerThread extends Thread{
                 Socket connection = server.accept();
                 System.out.println("Client Connected: "+connection.toString());
                 ClientConnection cc = new ClientConnection(connection, id);
-                new Thread(cc).start();
+                gsm.addClient(cc);
                 clients.add(cc);
             }
 

@@ -1,56 +1,39 @@
+
+import jsward.platformracer.common.game.GameCore;
+import jsward.platformracer.common.game.PlayerController;
+
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-import static java.lang.Thread.sleep;
-
-public class ClientConnection implements Runnable{
+public class ClientConnection {
 
     private final Socket connection;
     private final int connectionID;
-    private ObjectInputStream input;
-    private ObjectOutputStream output;
 
-
+    private ClientInputReciever clientInputReciever;
+    private ClientUpdateSender clientUpdateSender;
 
     public ClientConnection(Socket connection,int id){
-        this.connection =connection;
+        this.connection = connection;
         this.connectionID = id;
     }
 
-
-
-    @Override
-    public void run() {
-
-        try {
-            //setup streams
-            output = new ObjectOutputStream(connection.getOutputStream());
-            //input = new ObjectInputStream(connection.getInputStream());
-            output.flush();
-
-            while(true) {
-                output.writeObject(new GameUpdatePacket());
-                System.out.println("Sending Object...");
-                sleep(1000);
-            }
-
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                output.close();
-                input.close();
-                connection.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
+    public void startConnection(){
+        if (clientUpdateSender != null && clientInputReciever != null) {
+            clientUpdateSender.start();
+            clientInputReciever.start();
         }
+    }
+
+    public int getID(){
+        return connectionID;
+    }
+
+    public void createInputReciver(PlayerController controller) throws IOException {
+        clientInputReciever = new ClientInputReciever(connection,controller);
+    }
+
+    public void createUpdateSender(GameCore gameCore) throws IOException {
+        clientUpdateSender = new ClientUpdateSender(connection, gameCore);
     }
 }
