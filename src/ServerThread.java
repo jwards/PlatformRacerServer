@@ -1,8 +1,4 @@
-import jsward.platformracer.common.util.TickerThread;
-
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -38,9 +34,10 @@ public class ServerThread extends Thread {
             while(true){
                 Socket connection = server.accept();
                 System.out.println("Client Connected: "+connection.toString());
-                ClientConnection cc = new ClientConnection(connection, id);
-                gsm.addClient(cc);
+                ClientConnection cc = new ClientConnection(gsm,connection, id);
+                cc.start();
                 clients.add(cc);
+                //todo check for dead connections
             }
 
         } catch (IOException e) {

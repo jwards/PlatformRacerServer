@@ -15,10 +15,10 @@ public class ClientInputReciever extends TickerThread {
 
     private PlayerController playerController;
 
-    public ClientInputReciever(Socket socket, PlayerController playerController) throws IOException {
+    public ClientInputReciever(Socket socket,ObjectInputStream objectInputStream, PlayerController playerController) throws IOException {
         super(CLIENT_INPUT_POLL_RATE, false, null);
         this.socket = socket;
-        input = new ObjectInputStream(socket.getInputStream());
+        this.input = objectInputStream;
         this.playerController = playerController;
     }
 

@@ -1,5 +1,6 @@
 import jsward.platformracer.common.game.GameCore;
 import jsward.platformracer.common.game.PlatformLevel;
+import jsward.platformracer.common.network.GameSessionInfo;
 import jsward.platformracer.common.util.TickerThread;
 
 import java.io.IOException;
@@ -10,18 +11,25 @@ import static jsward.platformracer.common.util.Constants.PLAYERS_PER_GAME;
 
 public class GameSession extends TickerThread {
 
+    private int sessionId;
+
     private GameCore gameCore;
 
     private ArrayList<ClientConnection> clients;
+    private ClientConnection host;
 
 
-    public GameSession(){
+    public GameSession(int sessionId,ClientConnection host){
         super(GAME_LOOP_MAX_TPS,false,null);
+        this.sessionId = sessionId;
+        this.host = host;
         clients = new ArrayList<>();
         gameCore = new GameCore(new PlatformLevel());
+        addClient(host);
     }
 
     public void addClient(ClientConnection client){
+        if(client == null) return;
         clients.add(client);
         try {
             client.createInputReciver(gameCore.getPlayerController());
@@ -48,7 +56,17 @@ public class GameSession extends TickerThread {
         gameCore.tick();
     }
 
+    public int getSessionId(){
+        return sessionId;
+    }
 
+    public GameSessionInfo getInfo(){
+        if(host!=null){
+            return new GameSessionInfo(sessionId,host.getName(),clients.size(),PLAYERS_PER_GAME);
+        } else {
+            return new GameSessionInfo(sessionId,"EMPTY",0,PLAYERS_PER_GAME);
+        }
+    }
 
 
 }

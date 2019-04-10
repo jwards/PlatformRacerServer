@@ -3,6 +3,7 @@ import jsward.platformracer.common.network.GameUpdatePacket;
 import jsward.platformracer.common.util.TickerThread;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
@@ -17,13 +18,16 @@ public class ClientUpdateSender extends TickerThread {
 
     private GameUpdatePacket gup;
 
-    public ClientUpdateSender(Socket socket, GameCore game) throws IOException {
+    public ClientUpdateSender(Socket socket, ObjectOutputStream objectOutputStream, GameCore game){
         super(SERVER_UPDATE_RATE, false, null);
         this.socket = socket;
         this.gameCore = game;
-
-        outputStream = new ObjectOutputStream(socket.getOutputStream());
-        outputStream.flush();
+        this.outputStream = objectOutputStream;
+        try {
+            outputStream.flush();
+        }catch (IOException e){
+            e.printStackTrace();
+        }
 
         gup = new GameUpdatePacket();
     }
