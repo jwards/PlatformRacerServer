@@ -28,14 +28,17 @@ public class GameSession extends TickerThread {
         addClient(host);
     }
 
-    public void addClient(ClientConnection client){
-        if(client == null) return;
+    public boolean addClient(ClientConnection client){
+        if(client == null) return false;
+        if(clients.contains(client)) return false;
         clients.add(client);
         try {
             client.createInputReciver(gameCore.getPlayerController());
             client.createUpdateSender(gameCore);
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
+            return false;
         }
     }
 
@@ -64,7 +67,7 @@ public class GameSession extends TickerThread {
         if(host!=null){
             return new GameSessionInfo(sessionId,host.getName(),clients.size(),PLAYERS_PER_GAME);
         } else {
-            return new GameSessionInfo(sessionId,"EMPTY",0,PLAYERS_PER_GAME);
+            return new GameSessionInfo(sessionId,"EMPTY",clients.size(),PLAYERS_PER_GAME);
         }
     }
 

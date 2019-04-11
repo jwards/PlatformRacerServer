@@ -1,10 +1,7 @@
 
 import jsward.platformracer.common.game.GameCore;
 import jsward.platformracer.common.game.PlayerController;
-import jsward.platformracer.common.network.CreateGamePacket;
-import jsward.platformracer.common.network.JoinGamePacket;
-import jsward.platformracer.common.network.LobbyPacket;
-import jsward.platformracer.common.network.Status;
+import jsward.platformracer.common.network.*;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -43,29 +40,17 @@ public class ClientConnection extends Thread {
 
             while(inLobby){
                 Object obj = objectInputStream.readObject();
+                System.out.println("Recieved: " + obj.toString()+ " from client: "+connection.toString());
                 if(obj == null) continue;
 
                 if(obj instanceof LobbyPacket){
-                    //send back a full lobby packet
-                    LobbyPacket lobbyPacket = new LobbyPacket(gameSessionManager.getQueuedGameInfo());
-                    objectOutputStream.writeUnshared(lobbyPacket);
+                    handleLobbyUpdate();
                 } else if(obj instanceof JoinGamePacket){
-                    //attempted to join game
-                    JoinGamePacket joinGamePacket = (JoinGamePacket) obj;
-                    Status status = gameSessionManager.joinSession(joinGamePacket.gameSessionId,this);
-
-                    if(status == Status.BEGIN){
-                        //begin the game
-                        inLobby = false;
-                    }
-                    //reply with status of join game request
-                    objectOutputStream.writeInt(status.ordinal());
+                    inLobby = handleJoinGame(obj);
                 } else if(obj instanceof CreateGamePacket){
-                    //create game
-                    gameSessionManager.createSession(this);
-                    objectOutputStream.writeInt(Status.OK.ordinal());
+                    handleCreateGame();
                 }
-
+                objectOutputStream.flush();
             }
 
 
@@ -96,4 +81,27 @@ public class ClientConnection extends Thread {
     public void createUpdateSender(GameCore gameCore) throws IOException {
         clientUpdateSender = new ClientUpdateSender(connection,objectOutputStream, gameCore);
     }
+
+    private boolean handleJoinGame(Object packet) throws IOException {
+        //attempted to join game
+        JoinGamePacket joinGamePacket = (JoinGamePacket) packet;
+        Status status = gameSessionManager.joinSession(joinGamePacket.gameSessionId,this);
+        //reply with status of join game request
+        objectOutputStream.writeInt(status.ordinal());
+        System.out.println("Sent: " + status + " in response to JoinGameReq id: "+joinGamePacket.gameSessionId);
+        return status != Status.BEGIN;
+    }
+
+    private void handleCreateGame() throws IOException {
+        //create game
+        gameSessionManager.createSession(this);
+        objectOutputStream.writeInt(Status.OK.ordinal());
+    }
+
+    private void handleLobbyUpdate() throws IOException {
+        //send back a full lobby packet
+        LobbyPacket lobbyPacket = new LobbyPacket(gameSessionManager.getQueuedGameInfo());
+        objectOutputStream.writeUnshared(lobbyPacket);
+    }
+
 }
