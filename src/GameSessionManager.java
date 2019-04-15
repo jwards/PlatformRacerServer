@@ -53,6 +53,13 @@ public class GameSessionManager {
         return status;
     }
 
+    public synchronized void disconnect(ClientConnection client){
+        for(GameSession gs:queuedSessions){
+            //attempt to remove client from any queued game session
+            gs.removeClient(client);
+        }
+    }
+
     private GameSession getSession(int sessionId){
         for(GameSession gs:queuedSessions){
             if(gs.getSessionId() == sessionId){

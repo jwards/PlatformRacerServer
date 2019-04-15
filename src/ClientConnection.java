@@ -11,7 +11,7 @@ import java.net.Socket;
 public class ClientConnection extends Thread {
 
     private final Socket connection;
-    private final int connectionID;
+    private final String connectionID;
 
     private GameSessionManager gameSessionManager;
 
@@ -21,7 +21,7 @@ public class ClientConnection extends Thread {
     private ObjectOutputStream objectOutputStream;
     private ObjectInputStream objectInputStream;
 
-    public ClientConnection(GameSessionManager gameSessionManager, Socket connection,int id){
+    public ClientConnection(GameSessionManager gameSessionManager, Socket connection,String id){
         this.gameSessionManager = gameSessionManager;
         this.connection = connection;
         this.connectionID = id;
@@ -55,6 +55,7 @@ public class ClientConnection extends Thread {
 
         }catch (IOException e){
             e.printStackTrace();
+            gameSessionManager.disconnect(this);
         } catch (ClassNotFoundException e) {
             System.out.println("Error in ClientConnection: " + connection.toString());
             e.printStackTrace();
@@ -68,7 +69,7 @@ public class ClientConnection extends Thread {
         }
     }
 
-    public int getID(){
+    public String getClientId(){
         return connectionID;
     }
 
@@ -118,4 +119,14 @@ public class ClientConnection extends Thread {
         objectOutputStream.writeUnshared(response);
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if(obj != null){
+            if(obj instanceof ClientConnection){
+                ClientConnection other = (ClientConnection) obj;
+                return this.getClientId().equals(other.getClientId());
+            }
+        }
+        return false;
+    }
 }

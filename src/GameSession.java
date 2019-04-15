@@ -5,6 +5,7 @@ import jsward.platformracer.common.util.TickerThread;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import static jsward.platformracer.common.util.Constants.GAME_LOOP_MAX_TPS;
 import static jsward.platformracer.common.util.Constants.PLAYERS_PER_GAME;
@@ -39,6 +40,20 @@ public class GameSession extends TickerThread {
         } catch (IOException e) {
             e.printStackTrace();
             return false;
+        }
+    }
+
+    public void removeClient(ClientConnection client){
+        if (client.getClientId() == host.getClientId()) {
+            //TODO disband lobby or promote other client to host
+        } else {
+            Iterator<ClientConnection> members = clients.iterator();
+            while(members.hasNext()){
+                ClientConnection c = members.next();
+                if (c.getClientId().equals(client.getClientId())) {
+                    members.remove();
+                }
+            }
         }
     }
 
