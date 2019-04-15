@@ -9,19 +9,21 @@ public class GameSessionManager {
 
     private ArrayList<GameSession> queuedSessions;
 
-    private int sessionCounter = 0;
+    private int sessionCounter = 1;
 
     public GameSessionManager(){
         activeSessions = new ArrayList<>();
         queuedSessions = new ArrayList<>();
-        queuedSessions.add(new GameSession(1,null));
-        queuedSessions.add(new GameSession(2,null));
-        queuedSessions.add(new GameSession(3,null));
     }
 
-    public synchronized void createSession(ClientConnection client){
-        GameSession session = new GameSession(sessionCounter++,client);
+    public synchronized int createSession(ClientConnection client){
+        int sessionId = sessionCounter;
+        sessionCounter++;
+
+        GameSession session = new GameSession(sessionId,client);
+        queuedSessions.add(session);
         System.out.println("Adding Client: " + client.toString() + " to new session " + session.toString());
+        return sessionId;
     }
 
     public synchronized Status joinSession(int sessionId, ClientConnection client){
@@ -38,6 +40,7 @@ public class GameSessionManager {
             System.out.println("Error: client: " + client.toString() + " unable to join game session: " + sessionId);
             return Status.BAD;
         }
+        /*
         if(gameSession.ready()){
             System.out.println("Starting session: "+gameSession.getInfo().toString());
             gameSession.start();
@@ -45,6 +48,7 @@ public class GameSessionManager {
             activeSessions.add(gameSession);
             queuedSessions.remove(gameSession);
         }
+        */
         System.out.println("Client: " + client.toString() + " joined game session: " + gameSession.getInfo().toString());
         return status;
     }
@@ -64,6 +68,15 @@ public class GameSessionManager {
             infos.add(gs.getInfo());
         }
         return infos;
+    }
+
+    public ArrayList<GameSessionInfo> getQueuedGameInfo(int lobbyId){
+        ArrayList<GameSessionInfo> info = new ArrayList<>();
+        GameSession lobby = getSession(lobbyId);
+        if(lobby!=null){
+            info.add(lobby.getInfo());
+        }
+        return info;
     }
 
 }

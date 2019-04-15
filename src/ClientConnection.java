@@ -28,8 +28,7 @@ public class ClientConnection extends Thread {
     }
 
     @Override
-    public synchronized void start() {
-        super.start();
+    public void run() {
         try {
             objectInputStream = new ObjectInputStream(connection.getInputStream());
             objectOutputStream = new ObjectOutputStream(connection.getOutputStream());
@@ -44,7 +43,7 @@ public class ClientConnection extends Thread {
                 if(obj == null) continue;
 
                 if(obj instanceof LobbyPacket){
-                    handleLobbyUpdate();
+                    handleLobbyUpdate(obj);
                 } else if(obj instanceof JoinGamePacket){
                     inLobby = handleJoinGame(obj);
                 } else if(obj instanceof CreateGamePacket){
@@ -60,7 +59,6 @@ public class ClientConnection extends Thread {
             System.out.println("Error in ClientConnection: " + connection.toString());
             e.printStackTrace();
         }
-
     }
 
     public void startConnection(){
@@ -86,22 +84,38 @@ public class ClientConnection extends Thread {
         //attempted to join game
         JoinGamePacket joinGamePacket = (JoinGamePacket) packet;
         Status status = gameSessionManager.joinSession(joinGamePacket.gameSessionId,this);
+
         //reply with status of join game request
-        objectOutputStream.writeInt(status.ordinal());
+        JoinGamePacket response = new JoinGamePacket(joinGamePacket.gameSessionId);
+        response.status = status;
+        objectOutputStream.writeObject(response);
         System.out.println("Sent: " + status + " in response to JoinGameReq id: "+joinGamePacket.gameSessionId);
         return status != Status.BEGIN;
     }
 
     private void handleCreateGame() throws IOException {
         //create game
-        gameSessionManager.createSession(this);
-        objectOutputStream.writeInt(Status.OK.ordinal());
+        int sessionId = gameSessionManager.createSession(this);
+
+        JoinGamePacket response = new JoinGamePacket(sessionId);
+        response.status = Status.OK;
+        objectOutputStream.writeObject(response);
     }
 
-    private void handleLobbyUpdate() throws IOException {
+    private void handleLobbyUpdate(Object packet) throws IOException {
         //send back a full lobby packet
-        LobbyPacket lobbyPacket = new LobbyPacket(gameSessionManager.getQueuedGameInfo());
-        objectOutputStream.writeUnshared(lobbyPacket);
+        LobbyPacket lobbyReq = (LobbyPacket) packet;
+
+        LobbyPacket response;
+        if(lobbyReq.getLobbyId() == -1) {
+            response = new LobbyPacket(gameSessionManager.getQueuedGameInfo(),-1);
+        } else {
+            //find specific lobby
+
+
+            response = new LobbyPacket(gameSessionManager.getQueuedGameInfo(lobbyReq.getLobbyId()), lobbyReq.getLobbyId());
+        }
+        objectOutputStream.writeUnshared(response);
     }
 
 }

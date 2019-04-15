@@ -64,11 +64,13 @@ public class GameSession extends TickerThread {
     }
 
     public GameSessionInfo getInfo(){
-        if(host!=null){
-            return new GameSessionInfo(sessionId,host.getName(),clients.size(),PLAYERS_PER_GAME);
-        } else {
-            return new GameSessionInfo(sessionId,"EMPTY",clients.size(),PLAYERS_PER_GAME);
+        ArrayList<String> names = new ArrayList<>();
+
+        for (ClientConnection cc : clients) {
+            names.add(cc.getName());
         }
+
+        return new GameSessionInfo(sessionId,names.indexOf(host.getName()),clients.size(),PLAYERS_PER_GAME,names);
     }
 
 
