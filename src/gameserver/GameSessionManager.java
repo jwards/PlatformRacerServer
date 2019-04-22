@@ -1,3 +1,6 @@
+package gameserver;
+
+
 import jsward.platformracer.common.network.GameSessionInfo;
 import jsward.platformracer.common.network.Status;
 
