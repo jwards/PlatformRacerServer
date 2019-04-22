@@ -1,3 +1,5 @@
+package gameserver;
+
 import jsward.platformracer.common.game.PlayerController;
 import jsward.platformracer.common.network.GameInputPacket;
 import jsward.platformracer.common.util.TickerThread;

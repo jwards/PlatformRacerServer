@@ -1,3 +1,4 @@
+package gameserver;
 
 import jsward.platformracer.common.game.GameCore;
 import jsward.platformracer.common.game.PlayerController;
@@ -112,8 +113,6 @@ public class ClientConnection extends Thread {
             response = new LobbyPacket(gameSessionManager.getQueuedGameInfo(),-1);
         } else {
             //find specific lobby
-
-
             response = new LobbyPacket(gameSessionManager.getQueuedGameInfo(lobbyReq.getLobbyId()), lobbyReq.getLobbyId());
         }
         objectOutputStream.writeUnshared(response);

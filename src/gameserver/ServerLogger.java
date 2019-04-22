@@ -1,3 +1,5 @@
+package gameserver;
+
 import jsward.platformracer.common.util.ILogger;
 
 public class ServerLogger implements ILogger {

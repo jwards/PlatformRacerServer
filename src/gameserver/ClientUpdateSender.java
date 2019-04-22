@@ -1,3 +1,5 @@
+package gameserver;
+
 import jsward.platformracer.common.game.GameCore;
 import jsward.platformracer.common.network.GameUpdatePacket;
 import jsward.platformracer.common.util.TickerThread;

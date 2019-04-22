@@ -1,3 +1,5 @@
+package gameserver;
+
 import jsward.platformracer.common.game.GameCore;
 import jsward.platformracer.common.game.PlatformLevel;
 import jsward.platformracer.common.network.GameSessionInfo;
