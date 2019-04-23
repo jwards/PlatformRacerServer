@@ -82,17 +82,34 @@ public class ClientConnection extends Thread {
         clientUpdateSender = new ClientUpdateSender(connection,objectOutputStream, gameCore);
     }
 
+    public String getPlayerName(){
+        return connection.getInetAddress().getHostAddress();
+    }
+
     private boolean handleJoinGame(Object packet) throws IOException {
         //attempted to join game
         JoinGamePacket joinGamePacket = (JoinGamePacket) packet;
-        Status status = gameSessionManager.joinSession(joinGamePacket.gameSessionId,this);
 
-        //reply with status of join game request
-        JoinGamePacket response = new JoinGamePacket(joinGamePacket.gameSessionId);
-        response.status = status;
-        objectOutputStream.writeObject(response);
-        System.out.println("Sent: " + status + " in response to JoinGameReq id: "+joinGamePacket.gameSessionId);
-        return status != Status.BEGIN;
+        //if session id = -1 then its a leave game request
+        if(joinGamePacket.gameSessionId == -1){
+            //leave game
+            gameSessionManager.disconnect(this);
+            JoinGamePacket response = new JoinGamePacket(joinGamePacket.gameSessionId);
+            response.status = Status.OK;
+            objectOutputStream.writeUnshared(response);
+            System.out.println("Sent: " + response.status+ " in response to JoinGameReq id: " + joinGamePacket.gameSessionId);
+            return true;
+        } else {
+            //join game
+            Status status = gameSessionManager.joinSession(joinGamePacket.gameSessionId, this);
+
+            //reply with status of join game request
+            JoinGamePacket response = new JoinGamePacket(joinGamePacket.gameSessionId);
+            response.status = status;
+            objectOutputStream.writeUnshared(response);
+            System.out.println("Sent: " + status + " in response to JoinGameReq id: " + joinGamePacket.gameSessionId);
+            return status != Status.BEGIN;
+        }
     }
 
     private void handleCreateGame() throws IOException {
@@ -101,7 +118,7 @@ public class ClientConnection extends Thread {
 
         JoinGamePacket response = new JoinGamePacket(sessionId);
         response.status = Status.OK;
-        objectOutputStream.writeObject(response);
+        objectOutputStream.writeUnshared(response);
     }
 
     private void handleLobbyUpdate(Object packet) throws IOException {

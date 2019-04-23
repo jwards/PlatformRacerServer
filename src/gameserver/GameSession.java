@@ -45,16 +45,34 @@ public class GameSession extends TickerThread {
         }
     }
 
-    public void removeClient(ClientConnection client){
+    //returns true when this gamesession should be deleted
+    public boolean removeClient(ClientConnection client){
         if (client.getClientId() == host.getClientId()) {
-            //TODO disband lobby or promote other client to host
-        } else {
-            Iterator<ClientConnection> members = clients.iterator();
-            while(members.hasNext()){
-                ClientConnection c = members.next();
-                if (c.getClientId().equals(client.getClientId())) {
-                    members.remove();
+            //if there are any other players in the lobby, promote one of them to host
+            if(clients.size()>1){
+                //promote other player
+                for (ClientConnection cc : clients) {
+                    if (!cc.getClientId().equals(client.getClientId())) {
+                        host = cc;
+                        break;
+                    }
                 }
+            }
+        }
+        //remove the client
+        removeClient(client.getClientId());
+
+        //if the lobby is empty, remove it
+        return clients.size() == 0;
+    }
+
+    private void removeClient(String clientId){
+        Iterator<ClientConnection> members = clients.iterator();
+        while(members.hasNext()){
+            ClientConnection c = members.next();
+            if (c.getClientId().equals(clientId)) {
+                members.remove();
+                return;
             }
         }
     }
@@ -84,10 +102,10 @@ public class GameSession extends TickerThread {
         ArrayList<String> names = new ArrayList<>();
 
         for (ClientConnection cc : clients) {
-            names.add(cc.getName());
+            names.add(cc.getPlayerName());
         }
 
-        return new GameSessionInfo(sessionId,names.indexOf(host.getName()),clients.size(),PLAYERS_PER_GAME,names);
+        return new GameSessionInfo(sessionId,names.indexOf(host.getPlayerName()),clients.size(),PLAYERS_PER_GAME,names);
     }
 
 

@@ -5,6 +5,7 @@ import jsward.platformracer.common.network.GameSessionInfo;
 import jsward.platformracer.common.network.Status;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class GameSessionManager {
 
@@ -57,9 +58,14 @@ public class GameSessionManager {
     }
 
     public synchronized void disconnect(ClientConnection client){
-        for(GameSession gs:queuedSessions){
+        Iterator<GameSession> iter = queuedSessions.iterator();
+        while (iter.hasNext()) {
+            GameSession gs = iter.next();
             //attempt to remove client from any queued game session
-            gs.removeClient(client);
+            if(gs.removeClient(client)){
+                //remove the lobby
+                iter.remove();
+            }
         }
     }
 
