@@ -44,15 +44,7 @@ public class GameSessionManager {
             System.out.println("Error: client: " + client.toString() + " unable to join game session: " + sessionId);
             return Status.BAD;
         }
-        /*
-        if(gameSession.ready()){
-            System.out.println("Starting session: "+gameSession.getInfo().toString());
-            gameSession.start();
-            status = Status.BEGIN;
-            activeSessions.add(gameSession);
-            queuedSessions.remove(gameSession);
-        }
-        */
+
         System.out.println("Client: " + client.toString() + " joined game session: " + gameSession.getInfo().toString());
         return status;
     }
@@ -65,6 +57,7 @@ public class GameSessionManager {
             if(gs.removeClient(client)){
                 //remove the lobby
                 iter.remove();
+                return;
             }
         }
     }
@@ -72,6 +65,15 @@ public class GameSessionManager {
     private GameSession getSession(int sessionId){
         for(GameSession gs:queuedSessions){
             if(gs.getSessionId() == sessionId){
+                return gs;
+            }
+        }
+        return null;
+    }
+
+    private GameSession getSession(String clientId){
+        for(GameSession gs:queuedSessions){
+            if (gs.isMember(clientId)) {
                 return gs;
             }
         }
@@ -93,6 +95,14 @@ public class GameSessionManager {
             info.add(lobby.getInfo());
         }
         return info;
+    }
+
+    public boolean startGame(ClientConnection client){
+        GameSession session = getSession(client.getClientId());
+        if(session != null) {
+            return session.startGame(client.getClientId());
+        }
+        return false;
     }
 
 }

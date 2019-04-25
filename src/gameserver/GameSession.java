@@ -77,6 +77,35 @@ public class GameSession extends TickerThread {
         }
     }
 
+    public boolean isMember(String clientId){
+        for (ClientConnection cc : clients) {
+            if (cc.getClientId().equals(clientId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isHost(String clientId){
+        return host.getClientId().equals(clientId);
+    }
+
+    public boolean startGame(String clientId){
+        //only the host can start the game
+        if (isHost(clientId)) {
+            //make sure the lobby is actually full
+            if (clients.size() == PLAYERS_PER_GAME) {
+                for (ClientConnection c : clients) {
+                    if (c != host) {
+                        c.onStartGame();
+                    }
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean ready(){
         return clients.size() >= PLAYERS_PER_GAME;
     }

@@ -10,12 +10,9 @@ import static jsward.platformracer.common.util.Constants.SERVER_PORT;
 
 public class ServerThread extends Thread {
 
-    private ArrayList<ClientConnection> clients;
     private ServerSocket server;
 
     private GameSessionManager gsm;
-
-    private int id;
 
     public ServerThread() {
         gsm = new GameSessionManager();
@@ -25,8 +22,6 @@ public class ServerThread extends Thread {
     @Override
     public synchronized void start() {
         super.start();
-        clients = new ArrayList<>();
-        id = 1;
 
         //listen for connections
         try {
@@ -39,7 +34,6 @@ public class ServerThread extends Thread {
                 System.out.println("Client Connected: "+connection.toString());
                 ClientConnection cc = new ClientConnection(gsm,connection, UUID.randomUUID().toString());
                 cc.start();
-                clients.add(cc);
                 //todo check for dead connections
             }
 
