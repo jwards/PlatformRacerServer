@@ -96,9 +96,7 @@ public class GameSession extends TickerThread {
             //make sure the lobby is actually full
             if (clients.size() == PLAYERS_PER_GAME) {
                 for (ClientConnection c : clients) {
-                    if (c != host) {
                         c.onStartGame();
-                    }
                 }
                 return true;
             }
