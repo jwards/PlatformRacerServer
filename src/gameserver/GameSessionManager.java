@@ -24,7 +24,7 @@ public class GameSessionManager {
         int sessionId = sessionCounter;
         sessionCounter++;
 
-        GameSession session = new GameSession(sessionId,client);
+        GameSession session = new GameSession(sessionId,client,this);
         queuedSessions.add(session);
         System.out.println("Adding Client: " + client.toString() + " to new session " + session.toString());
         return sessionId;
@@ -105,4 +105,7 @@ public class GameSessionManager {
         return false;
     }
 
+    public synchronized void closeSession(GameSession session) {
+        queuedSessions.remove(session);
+    }
 }

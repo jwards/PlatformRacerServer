@@ -12,13 +12,11 @@ import java.net.Socket;
 public class ClientConnection extends Thread {
 
     private final Socket connection;
-    private final String connectionID;
     private String clientUserId;
 
     private GameSessionManager gameSessionManager;
 
-    private ClientInputReciever clientInputReciever;
-    private ClientUpdateSender clientUpdateSender;
+    private GameCommunication gameCommunication;
 
     private ObjectOutputStream objectOutputStream;
     private ObjectInputStream objectInputStream;
@@ -31,10 +29,9 @@ public class ClientConnection extends Thread {
 
 
 
-    public ClientConnection(GameSessionManager gameSessionManager, Socket connection,String id){
+    public ClientConnection(GameSessionManager gameSessionManager, Socket connection){
         this.gameSessionManager = gameSessionManager;
         this.connection = connection;
-        this.connectionID = id;
         enteringGame = false;
         inGame = false;
     }
@@ -78,7 +75,14 @@ public class ClientConnection extends Thread {
 
             //ingame communication loop
             if(inGame){
+                //first send the client the game info
+                gameCommunication.sendPlayerInfo();
+
+                //tell game session we are ready to start
+                //when all clients have signaled ready, the game begins
                 gameSessionManager.getSession(getClientId()).signalReady(getClientId());
+
+                //begin the game
                 startConnection();
             }
 
@@ -105,12 +109,10 @@ public class ClientConnection extends Thread {
     }
 
     public void startConnection(){
-        if (clientUpdateSender != null && clientInputReciever != null) {
-            clientUpdateSender.start();
-            clientInputReciever.start();
+        if (gameCommunication != null) {
+            gameCommunication.start();
             try {
-                clientUpdateSender.join();
-                clientInputReciever.join();
+                gameCommunication.join();
             } catch (InterruptedException e) {
 
             }
@@ -119,15 +121,11 @@ public class ClientConnection extends Thread {
     }
 
     public String getClientId(){
-        return connectionID;
+        return clientUserId;
     }
 
-    public void createInputReciver(PlayerController controller) throws IOException {
-        clientInputReciever = new ClientInputReciever(connection,objectInputStream,controller);
-    }
-
-    public void createUpdateSender(GameCore gameCore) throws IOException {
-        clientUpdateSender = new ClientUpdateSender(connection,objectOutputStream, gameCore);
+    public void setupGameCommunication(GameCore gameCore) throws IOException {
+        gameCommunication = new GameCommunication(connection,objectOutputStream,objectInputStream, gameCore,getClientId());
     }
 
     public String getPlayerName(){

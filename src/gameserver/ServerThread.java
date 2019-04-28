@@ -32,9 +32,8 @@ public class ServerThread extends Thread {
             while(true){
                 Socket connection = server.accept();
                 System.out.println("Client Connected: "+connection.toString());
-                ClientConnection cc = new ClientConnection(gsm,connection, UUID.randomUUID().toString());
+                ClientConnection cc = new ClientConnection(gsm,connection);
                 cc.start();
-                //todo check for dead connections
             }
 
         } catch (IOException e) {

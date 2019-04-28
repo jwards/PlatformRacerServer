@@ -8,7 +8,6 @@ import jsward.platformracer.common.util.TickerThread;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Iterator;
 
 import static jsward.platformracer.common.util.Constants.GAME_LOOP_MAX_TPS;
@@ -20,15 +19,18 @@ public class GameSession extends TickerThread {
 
     private GameCore gameCore;
 
+    private GameSessionManager manager;
+
     private HashSet<String> readyClients;
     private ArrayList<ClientConnection> clients;
     private ClientConnection host;
 
 
-    public GameSession(int sessionId,ClientConnection host){
+    public GameSession(int sessionId,ClientConnection host,GameSessionManager manager){
         super(GAME_LOOP_MAX_TPS,false,null);
         this.sessionId = sessionId;
         this.host = host;
+        this.manager = manager;
         clients = new ArrayList<>();
         readyClients = new HashSet<>();
         gameCore = new GameCore(new PlatformLevel());
@@ -38,13 +40,17 @@ public class GameSession extends TickerThread {
     public boolean addClient(ClientConnection client){
         if(client == null) return false;
         if(clients.contains(client)) return false;
+        if(clients.size()>= PLAYERS_PER_GAME) return false;
+
         clients.add(client);
+        gameCore.addPlayer(client.getClientId());
+        gameCore.addPlayerController(client.getClientId());
         try {
-            client.createInputReciver(gameCore.getPlayerController());
-            client.createUpdateSender(gameCore);
+            client.setupGameCommunication(gameCore);
             return true;
         } catch (IOException e) {
             e.printStackTrace();
+            clients.remove(client);
             return false;
         }
     }
@@ -115,6 +121,7 @@ public class GameSession extends TickerThread {
         if (readyClients.size() == clients.size()) {
             //begin the game
             this.start();
+            manager.closeSession(this);
         }
     }
 
