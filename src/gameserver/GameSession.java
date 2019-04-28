@@ -7,6 +7,8 @@ import jsward.platformracer.common.util.TickerThread;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
 
 import static jsward.platformracer.common.util.Constants.GAME_LOOP_MAX_TPS;
@@ -18,6 +20,7 @@ public class GameSession extends TickerThread {
 
     private GameCore gameCore;
 
+    private HashSet<String> readyClients;
     private ArrayList<ClientConnection> clients;
     private ClientConnection host;
 
@@ -27,6 +30,7 @@ public class GameSession extends TickerThread {
         this.sessionId = sessionId;
         this.host = host;
         clients = new ArrayList<>();
+        readyClients = new HashSet<>();
         gameCore = new GameCore(new PlatformLevel());
         addClient(host);
     }
@@ -104,16 +108,18 @@ public class GameSession extends TickerThread {
         return false;
     }
 
-    public boolean ready(){
-        return clients.size() >= PLAYERS_PER_GAME;
+    public synchronized void signalReady(String clientId){
+        if (isMember(clientId)) {
+            readyClients.add(clientId);
+        }
+        if (readyClients.size() == clients.size()) {
+            //begin the game
+            this.start();
+        }
     }
 
-    @Override
-    public synchronized void start() {
-        for (ClientConnection c : clients) {
-            c.startConnection();
-        }
-        super.start();
+    public boolean ready(){
+        return clients.size() >= PLAYERS_PER_GAME;
     }
 
     @Override

@@ -37,9 +37,12 @@ public class ClientUpdateSender extends TickerThread {
 
     @Override
     protected void tick() {
-        gup.setPlayer(gameCore.getPlayer());
+        gup.client = gameCore.getPlayer();
+        gup.otherPlayers = gameCore.getOpponents();
         try {
+            outputStream.reset();
             outputStream.writeUnshared(gup);
+            outputStream.flush();
         } catch (IOException e) {
             e.printStackTrace();
             hault();

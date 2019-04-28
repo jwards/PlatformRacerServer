@@ -71,7 +71,7 @@ public class GameSessionManager {
         return null;
     }
 
-    private GameSession getSession(String clientId){
+    public GameSession getSession(String clientId){
         for(GameSession gs:queuedSessions){
             if (gs.isMember(clientId)) {
                 return gs;

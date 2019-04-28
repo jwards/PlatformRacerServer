@@ -50,6 +50,7 @@ public class ClientConnection extends Thread {
             clientUserId = (String) objectInputStream.readObject();
 
 
+            //lobby communication loop
             while(!inGame || enteringGame){
                 Object obj = objectInputStream.readObject();
                 System.out.println("Recieved: " + obj.toString()+ " from client: "+connection.toString());
@@ -75,8 +76,13 @@ public class ClientConnection extends Thread {
                 objectOutputStream.flush();
             }
 
-            //start the game
-            objectOutputStream.writeUnshared(new StartGamePacket(Status.OK));
+            //ingame communication loop
+            if(inGame){
+                gameSessionManager.getSession(getClientId()).signalReady(getClientId());
+                startConnection();
+            }
+
+
 
 
 
@@ -102,6 +108,13 @@ public class ClientConnection extends Thread {
         if (clientUpdateSender != null && clientInputReciever != null) {
             clientUpdateSender.start();
             clientInputReciever.start();
+            try {
+                clientUpdateSender.join();
+                clientInputReciever.join();
+            } catch (InterruptedException e) {
+
+            }
+
         }
     }
 
@@ -165,6 +178,8 @@ public class ClientConnection extends Thread {
             response = new LobbyPacket(gameSessionManager.getQueuedGameInfo(), -1);
         } else {
             //find specific lobby
+            //todo instead of sending index, send id
+            //this could cause an index out of bounds if the client and server lobby lists are out of sync
             response = new LobbyPacket(gameSessionManager.getQueuedGameInfo(lobbyReq.getLobbyId()), lobbyReq.getLobbyId());
         }
         objectOutputStream.writeUnshared(response);
@@ -188,6 +203,7 @@ public class ClientConnection extends Thread {
 
     private void sendStartGame() throws IOException {
         objectOutputStream.writeUnshared(new StartGamePacket(Status.OK));
+        enteringGame = false;
     }
 
     @Override
