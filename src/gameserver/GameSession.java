@@ -7,6 +7,7 @@ import jsward.platformracer.common.util.TickerThread;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 
@@ -33,7 +34,7 @@ public class GameSession extends TickerThread {
         this.manager = manager;
         clients = new ArrayList<>();
         readyClients = new HashSet<>();
-        gameCore = new GameCore(new PlatformLevel());
+        gameCore = new GameCore(new PlatformLevel(),new Date());
         addClient(host);
     }
 

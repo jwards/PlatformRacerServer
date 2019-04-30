@@ -20,8 +20,8 @@ public class ServerThread extends Thread {
 
 
     @Override
-    public synchronized void start() {
-        super.start();
+    public void run() {
+        super.run();
 
         //listen for connections
         try {
@@ -39,7 +39,5 @@ public class ServerThread extends Thread {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
     }
 }
