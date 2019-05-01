@@ -1,6 +1,7 @@
 package gameserver;
 
 import jsward.platformracer.common.game.GameCore;
+import jsward.platformracer.common.game.HighScore;
 import jsward.platformracer.common.game.PlayerController;
 import jsward.platformracer.common.network.*;
 import jsward.platformracer.common.util.UserInfo;
@@ -9,6 +10,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 
 public class ClientConnection extends Thread {
 
@@ -88,6 +90,8 @@ public class ClientConnection extends Thread {
                     //send start game to all other clients
                     //this is done through the lobby update packets except for the host
                     handleStartGame();
+                } else if (obj instanceof LeaderBoardPacket) {
+                    handleLeaderboard();
                 }
                 objectOutputStream.flush();
             }
@@ -170,6 +174,19 @@ public class ClientConnection extends Thread {
 
     public String getPlayerName(){
         return connection.getInetAddress().getHostAddress();
+    }
+
+    private void handleLeaderboard() throws IOException {
+
+        //TODO get values from db
+        ArrayList<HighScore> score = new ArrayList<>();
+        score.add(new HighScore(new UserInfo("he was number one", "manjenkins"), 123));
+
+        LeaderBoardPacket response = new LeaderBoardPacket();
+
+        response.scores = score;
+
+        objectOutputStream.writeUnshared(response);
     }
 
     //handles both joining and leaving game lobbies
