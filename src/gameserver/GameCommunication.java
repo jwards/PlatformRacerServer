@@ -1,7 +1,6 @@
 package gameserver;
 
 import jsward.platformracer.common.game.GameCore;
-import jsward.platformracer.common.game.Player;
 import jsward.platformracer.common.game.PlayerController;
 import jsward.platformracer.common.network.GameUpdatePacket;
 import jsward.platformracer.common.util.TickerThread;
@@ -10,7 +9,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.function.ObjIntConsumer;
 
 import static jsward.platformracer.common.util.Constants.SERVER_UPDATE_RATE;
 
@@ -59,10 +57,13 @@ public class GameCommunication extends TickerThread {
         }
     }
 
-    public void receiveControls(){
+    public void receiveUpdate(){
         try {
-            long obj = inputStream.readLong();
-            playerController.setControlsActive(obj);
+            long controls = inputStream.readLong();
+            float x = inputStream.readFloat();
+            float y = inputStream.readFloat();
+            playerController.setControlsActive(controls);
+            playerController.updatePosition(x,y,1f/SERVER_UPDATE_RATE);
             //System.out.println(obj);
         } catch (IOException e) {
             e.printStackTrace();
@@ -72,7 +73,7 @@ public class GameCommunication extends TickerThread {
 
     @Override
     protected void tick() {
-        receiveControls();
+        receiveUpdate();
         sendPlayerInfo();
     }
 }
