@@ -3,6 +3,7 @@ package gameserver;
 import jsward.platformracer.common.game.GameCore;
 import jsward.platformracer.common.game.PlayerController;
 import jsward.platformracer.common.network.*;
+import jsward.platformracer.common.util.UserInfo;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -12,7 +13,8 @@ import java.net.Socket;
 public class ClientConnection extends Thread {
 
     private final Socket connection;
-    private String clientUserId;
+
+    private UserInfo clientInfo;
 
     private GameSessionManager gameSessionManager;
 
@@ -43,8 +45,25 @@ public class ClientConnection extends Thread {
             objectOutputStream = new ObjectOutputStream(connection.getOutputStream());
             objectOutputStream.flush();
 
-            //first thing to receive is the client's ID
-            clientUserId = (String) objectInputStream.readObject();
+            //try to authenticate client
+            boolean authenticated = false;
+            while(!authenticated){
+                Object obj = objectInputStream.readObject();
+                if(obj instanceof LoginPacket) {
+                    LoginPacket reply = Authenticator.autheticate((LoginPacket) obj);
+                    authenticated = reply.isValid();
+                    if(authenticated){
+                        clientInfo = new UserInfo(reply.getUserid(), reply.getUsername());
+                    }
+                    objectOutputStream.writeUnshared(reply);
+                } else {
+                    //user needs to authenticate before handling of other requests
+                    objectOutputStream.writeUnshared(new LoginPacket("", "", false));
+                }
+                objectOutputStream.flush();
+            }
+
+
 
 
             //lobby communication loop
@@ -121,8 +140,29 @@ public class ClientConnection extends Thread {
     }
 
     public String getClientId(){
-        return clientUserId;
+        if (clientInfo == null) {
+            return "unknown";
+        } else {
+            return clientInfo.getId();
+        }
     }
+
+    public String getClientName(){
+        if (clientInfo == null) {
+            return "unknown";
+        } else {
+            return clientInfo.getId();
+        }
+    }
+
+    public UserInfo getClientInfo(){
+        if (clientInfo == null) {
+            return new UserInfo("unknown", "unknown");
+        } else {
+            return clientInfo;
+        }
+    }
+
 
     public void setupGameCommunication(GameCore gameCore) throws IOException {
         gameCommunication = new GameCommunication(connection,objectOutputStream,objectInputStream, gameCore,getClientId());

@@ -4,6 +4,7 @@ import jsward.platformracer.common.game.GameCore;
 import jsward.platformracer.common.game.PlatformLevel;
 import jsward.platformracer.common.network.GameSessionInfo;
 import jsward.platformracer.common.util.TickerThread;
+import jsward.platformracer.common.util.UserInfo;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -105,7 +106,7 @@ public class GameSession extends TickerThread {
         //only the host can start the game
         if (isHost(clientId)) {
             //make sure the lobby is actually full
-            if (clients.size() == PLAYERS_PER_GAME) {
+            if (ready()) {
                 for (ClientConnection c : clients) {
                         c.onStartGame();
                 }
@@ -127,7 +128,7 @@ public class GameSession extends TickerThread {
     }
 
     public boolean ready(){
-        return clients.size() >= PLAYERS_PER_GAME;
+        return clients.size() >= 2;
     }
 
     @Override
@@ -140,13 +141,13 @@ public class GameSession extends TickerThread {
     }
 
     public GameSessionInfo getInfo(){
-        ArrayList<String> names = new ArrayList<>();
+        ArrayList<UserInfo> clientInfo = new ArrayList<>();
 
         for (ClientConnection cc : clients) {
-            names.add(cc.getPlayerName());
+            clientInfo.add(cc.getClientInfo());
         }
 
-        return new GameSessionInfo(sessionId,names.indexOf(host.getPlayerName()),clients.size(),PLAYERS_PER_GAME,names);
+        return new GameSessionInfo(sessionId,host.getClientInfo(),clients.size(),PLAYERS_PER_GAME,clientInfo);
     }
 
 
