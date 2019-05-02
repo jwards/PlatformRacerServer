@@ -9,5 +9,8 @@ public class Main {
        // LoginServer ls = new LoginServer();
         st.start();
       //  ls.start();
+
+        //connect to database
+        Database.getInstance().connect();
     }
 }

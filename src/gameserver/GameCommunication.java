@@ -82,11 +82,17 @@ public class GameCommunication extends TickerThread {
         sendPlayerInfo();
         //TODO start and end game logic
         try {
+            //end of game logic
             if (playerController.atEndOfLevel()) {
-                System.out.println(clientId+ " finished with score " + gameCore.getTime());
+                final long time = gameCore.getTime();
+
+                System.out.println(clientId+ " finished with score " + time);
                 outputStream.writeInt(1);
                 //end of game send player their score
-                outputStream.writeLong(gameCore.getTime());
+                outputStream.writeLong(time);
+
+                //save the score in the db
+                Database.getInstance().addScore(clientId, time);
                 //end the thread
                 hault();
             } else {

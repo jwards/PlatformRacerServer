@@ -6,6 +6,7 @@ import jsward.platformracer.common.game.PlayerController;
 import jsward.platformracer.common.network.*;
 import jsward.platformracer.common.util.UserInfo;
 
+import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -184,9 +185,7 @@ public class ClientConnection extends Thread {
 
     private void handleLeaderboard() throws IOException {
 
-        //TODO get values from db
-        ArrayList<HighScore> score = new ArrayList<>();
-        score.add(new HighScore(new UserInfo("he was number one", "manjenkins"), 123));
+        ArrayList<HighScore> score = Database.getInstance().getScores();
 
         LeaderBoardPacket response = new LeaderBoardPacket();
 
