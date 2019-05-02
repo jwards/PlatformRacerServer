@@ -128,7 +128,12 @@ public class GameSession extends TickerThread {
     }
 
     public boolean ready(){
-        return clients.size() >= 2;
+        return clients.size() >= 1;
+    }
+
+    @Override
+    protected void onBegin() {
+        gameCore.onGameStart();
     }
 
     @Override

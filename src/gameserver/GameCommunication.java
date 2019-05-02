@@ -72,8 +72,29 @@ public class GameCommunication extends TickerThread {
     }
 
     @Override
+    protected void onBegin() {
+
+    }
+
+    @Override
     protected void tick() {
         receiveUpdate();
         sendPlayerInfo();
+        //TODO start and end game logic
+        try {
+            if (playerController.atEndOfLevel()) {
+                System.out.println(clientId+ " finished with score " + gameCore.getTime());
+                outputStream.writeInt(1);
+                //end of game send player their score
+                outputStream.writeLong(gameCore.getTime());
+                //end the thread
+                hault();
+            } else {
+                outputStream.writeInt(0);
+            }
+            outputStream.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -49,12 +49,12 @@ public class ClientConnection extends Thread {
 
             //try to authenticate client
             boolean authenticated = false;
-            while(!authenticated){
+            while (!authenticated) {
                 Object obj = objectInputStream.readObject();
-                if(obj instanceof LoginPacket) {
+                if (obj instanceof LoginPacket) {
                     LoginPacket reply = Authenticator.autheticate((LoginPacket) obj);
                     authenticated = reply.isValid();
-                    if(authenticated){
+                    if (authenticated) {
                         clientInfo = new UserInfo(reply.getUserid(), reply.getUsername());
                     }
                     objectOutputStream.writeUnshared(reply);
@@ -64,62 +64,65 @@ public class ClientConnection extends Thread {
                 }
                 objectOutputStream.flush();
             }
-
-
-
-
-            //lobby communication loop
-            while(!inGame || enteringGame){
-                Object obj = objectInputStream.readObject();
-                System.out.println("Recieved: " + obj.toString()+ " from client: "+connection.toString());
-                if(obj == null) continue;
-
-                if(obj instanceof LobbyPacket){
-                    if(enteringGame){
-                        //tell the client to begin the game
-                        sendStartGame();
-                    } else {
-                        //normal lobby update
-                        handleLobbyUpdate(obj, inGame);
-                    }
-                } else if(obj instanceof JoinGamePacket){
-                    handleJoinGame(obj);
-                } else if(obj instanceof CreateGamePacket){
-                    handleCreateGame();
-                } else if(obj instanceof StartGamePacket){
-                    //send start game to all other clients
-                    //this is done through the lobby update packets except for the host
-                    handleStartGame();
-                } else if (obj instanceof LeaderBoardPacket) {
-                    handleLeaderboard();
-                }
-                objectOutputStream.flush();
-            }
-
-            //ingame communication loop
-            if(inGame){
-                //first send the client the game info
-                gameCommunication.sendPlayerInfo();
-
-                //tell game session we are ready to start
-                //when all clients have signaled ready, the game begins
-                gameSessionManager.getSession(getClientId()).signalReady(getClientId());
-
-                //begin the game
-                startConnection();
-            }
-
-
-
-
-
-        }catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
-            gameSessionManager.disconnect(this);
         } catch (ClassNotFoundException e) {
-            System.out.println("Error in ClientConnection: " + connection.toString());
             e.printStackTrace();
         }
+
+            try {
+                while (true) {
+
+                    //lobby communication loop
+                    while (!inGame || enteringGame) {
+                        Object obj = objectInputStream.readObject();
+                        System.out.println("Recieved: " + obj.toString() + " from client: " + connection.toString());
+                        if (obj == null) continue;
+
+                        if (obj instanceof LobbyPacket) {
+                            if (enteringGame) {
+                                //tell the client to begin the game
+                                sendStartGame();
+                            } else {
+                                //normal lobby update
+                                handleLobbyUpdate(obj, inGame);
+                            }
+                        } else if (obj instanceof JoinGamePacket) {
+                            handleJoinGame(obj);
+                        } else if (obj instanceof CreateGamePacket) {
+                            handleCreateGame();
+                        } else if (obj instanceof StartGamePacket) {
+                            //send start game to all other clients
+                            //this is done through the lobby update packets except for the host
+                            handleStartGame();
+                        } else if (obj instanceof LeaderBoardPacket) {
+                            handleLeaderboard();
+                        }
+                        objectOutputStream.flush();
+                    }
+
+                    //ingame communication loop
+                    if (inGame) {
+                        //first send the client the game info
+                        gameCommunication.sendPlayerInfo();
+
+                        //tell game session we are ready to start
+                        //when all clients have signaled ready, the game begins
+                        gameSessionManager.getSession(getClientId()).signalReady(getClientId());
+
+                        //begin the game
+                        startConnection();
+                    }
+
+                }
+            }catch(IOException e){
+                e.printStackTrace();
+                gameSessionManager.disconnect(this);
+            } catch(ClassNotFoundException e){
+                System.out.println("Error in ClientConnection: " + connection.toString());
+                e.printStackTrace();
+            }
+
     }
 
     //called when a game lobby that this client is in is started
@@ -138,6 +141,9 @@ public class ClientConnection extends Thread {
                 gameCommunication.join();
             } catch (InterruptedException e) {
 
+            } finally {
+                inGame = false;
+                enteringGame = false;
             }
 
         }
