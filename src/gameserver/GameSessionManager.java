@@ -9,14 +9,12 @@ import java.util.Iterator;
 
 public class GameSessionManager {
 
-    private ArrayList<GameSession> activeSessions;
 
     private ArrayList<GameSession> queuedSessions;
 
     private int sessionCounter = 1;
 
     public GameSessionManager(){
-        activeSessions = new ArrayList<>();
         queuedSessions = new ArrayList<>();
     }
 

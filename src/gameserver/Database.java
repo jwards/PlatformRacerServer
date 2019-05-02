@@ -111,7 +111,7 @@ public class Database {
 
         try{
             Statement s = connection.createStatement();
-            ResultSet scoreSet = s.executeQuery("select u.username,u.userid, s.score from highscore s, users u where u.userid = s.userid order by s.score asc");
+            ResultSet scoreSet = s.executeQuery("select u.username,u.userid, s.score from highscore s, users u where u.userid = s.userid order by s.score asc limit 50");
             while (scoreSet.next()) {
                 String name = scoreSet.getString(1);
                 String id = scoreSet.getString(2);
@@ -132,7 +132,7 @@ public class Database {
             ((PreparedStatement) s).setLong(2, score);
             ((PreparedStatement) s).executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+
         }
     }
 
